@@ -1,0 +1,26 @@
+spring:
+  config:
+    import: nacos:user-service.yml
+  application:
+    name: user-service
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+        group: DEFAULT_GROUP
+        file-extension: yml
+      discovery:
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+        service: ${spring.application.name}
+        group: DEFAULT_GROUP
+
+jwt:
+  secret: StormUser2025!@#$%^&*()_+{}[]|\\:;\"'<>?,./
+  expiration: 86400000
+
+server:
+  port: 8080
