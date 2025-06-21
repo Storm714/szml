@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: permission-service
+  config:
+    import: optional:nacos:permission-service.yml
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+        group: DEFAULT_GROUP
+        file-extension: yml
+        username: nacos
+        password: nacos
+      discovery:
+        server-addr: 127.0.0.1:8848
+        service: ${spring.application.name}
+        group: DEFAULT_GROUP
+        username: nacos
+        password: nacos

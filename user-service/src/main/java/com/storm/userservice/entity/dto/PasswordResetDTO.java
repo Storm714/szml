@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class PasswordResetDTO {
 
-    private Long id;
+    private String username;
 
     private String newPassword;
 

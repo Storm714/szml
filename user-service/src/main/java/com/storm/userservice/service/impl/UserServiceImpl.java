@@ -47,36 +47,42 @@ public class UserServiceImpl implements UserService {
         log.info("用户注册请求: username={}", dto.getUsername());
 
         try {
+            // 检查userId是否已存在
+            boolean existingUserId = userMapper.existsByUserId(dto.getUserId());
+            if (existingUserId) {
+                return Result.error("用户ID已存在");
+            }
             // 检查用户名是否已存在
-            User existingUser = userMapper.selectByUsername(dto.getUsername());
-            if (existingUser != null) {
+            boolean existingUser = userMapper.existsByUsername(dto.getUsername());
+            if (existingUser) {
                 return Result.error("用户名已存在");
             }
 
             // 创建新用户
             User user = User.builder()
+                    .userId(dto.getUserId())
                     .username(dto.getUsername())
                     .password(passwordEncoder.encode(dto.getPassword()))
                     .email(dto.getEmail())
                     .phone(dto.getPhone())
                     .build();
 
-            // 保存用户到数据库（分库分表）
-            userMapper.insert(user);
-            log.info("用户创建成功: userId={}, username={}", user.getId(), dto.getUsername());
+            // 保存用户到数据库
+            userMapper.insertUser(user);
+            log.info("用户创建成功: userId={}, username={}", user.getUserId(), dto.getUsername());
 
             // RPC调用权限服务绑定默认角色
-            Result<Void> roleBindResult = permissionServiceFeign.bindDefaultRole(user.getId());
+            Result<Void> roleBindResult = permissionServiceFeign.bindDefaultRole(user.getUserId());
             if (!roleBindResult.isSuccess()) {
-                log.error("角色绑定失败: userId={}, error={}", user.getId(), roleBindResult.getMessage());
+                log.error("角色绑定失败: userId={}, error={}", user.getUserId(), roleBindResult.getMessage());
                 throw new RuntimeException("角色绑定失败: " + roleBindResult.getMessage());
             }
-            log.info("角色绑定成功: userId={}", user.getId());
+            log.info("角色绑定成功: userId={}", user.getUserId());
 
             // 发送注册日志消息到MQ
-            logMessageProducer.sendUserRegisterLog(user.getId(), dto.getUsername());
+            logMessageProducer.sendUserRegisterLog(user.getUserId(), dto.getUsername());
 
-            log.info("用户注册成功: userId={}, username={}", user.getId(), dto.getUsername());
+            log.info("用户注册成功: userId={}, username={}", user.getUserId(), dto.getUsername());
             return Result.success();
 
         } catch (Exception e) {
@@ -102,22 +108,21 @@ public class UserServiceImpl implements UserService {
             }
 
             // 获取用户角色
-            String roleCode = "USER"; // 默认角色
+            String roleCode = "USER"; // 默认角色为普通用户
             try {
-                roleCode = permissionServiceFeign.getUserRoleCode(user.getId());
-                Result<String> roleResult = Result.success(roleCode);
+                Result<String> roleResult = permissionServiceFeign.getUserRoleCode(user.getUserId());
                 if (roleResult.isSuccess() && StringUtils.hasText(roleResult.getData())) {
                     roleCode = roleResult.getData();
                 }
             } catch (Exception e) {
-                log.warn("获取用户角色失败，使用默认角色: userId={}, error={}", user.getId(), e.getMessage());
+                log.warn("获取用户角色失败，使用默认角色: userId={}, error={}", user.getUserId(), e.getMessage());
             }
 
             // 生成JWT Token
-            String token = jwtUtil.generateToken(user.getId(), user.getUsername(), roleCode);
+            String token = jwtUtil.generateToken(user.getUserId(), user.getUsername(), roleCode);
 
             // 发送登录日志消息
-            logMessageProducer.sendUserLoginLog(user.getId(), user.getUsername());
+            logMessageProducer.sendUserLoginLog(user.getUserId(), user.getUsername());
 
             log.info("用户登录成功: username={}, roleCode={}", dto.getUsername(), roleCode);
             return Result.success("登录成功", token);

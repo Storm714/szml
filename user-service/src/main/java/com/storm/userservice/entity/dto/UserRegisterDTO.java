@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 public class UserRegisterDTO {
 
+    private Long userId;
+
     @NotBlank(message = "用户名不能为空")
     private String username;
 

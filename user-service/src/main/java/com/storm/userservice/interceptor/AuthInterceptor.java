@@ -17,6 +17,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+// 权限拦截器
 @Slf4j
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
@@ -66,8 +67,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             String username = jwtUtil.getUsernameFromToken(token);
 
             // 获取用户角色
-            String roleCode = permissionServiceFeign.getUserRoleCode(userId);
-            Result<String> roleResult = Result.success(roleCode);
+            Result<String> roleResult = permissionServiceFeign.getUserRoleCode(userId);
             if (!roleResult.isSuccess()) {
                 return handleAuthFailure(response, "获取用户角色失败");
             }

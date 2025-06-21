@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @TableName("users")
 public class User {
 
-    @TableId(value = "user_id", type = IdType.AUTO)
-    private Long id;
+    @TableId("user_id")
+    private Long userId;
 
     @TableField("username")
     @NotBlank(message = "用户名不能为空")

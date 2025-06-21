@@ -1,18 +1,18 @@
 package com.storm.userservice.common;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApiResponse<T> {
 
     private int code;
     private String message;
     private T data;
     private long timestamp;
-
-    public ApiResponse() {
-        this.timestamp = System.currentTimeMillis();
-    }
 
     public ApiResponse(int code, String message, T data) {
         this.code = code;

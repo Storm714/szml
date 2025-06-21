@@ -20,6 +20,10 @@ public interface UserMapper extends BaseMapper<User> {
     @Select("SELECT * FROM users LIMIT #{size} OFFSET #{offset}")
     List<User> selectUsersWithPage(@Param("offset") int offset, @Param("size") int size);
 
+    // 检查用户ID是否存在
+    @Select("SELECT COUNT(1) > 0 FROM users WHERE user_id = #{userId}")
+    boolean existsByUserId(@Param("userId") Long userId);
+
     // 检查用户名是否存在
     @Select("SELECT COUNT(1) > 0 FROM users WHERE username = #{username}")
     boolean existsByUsername(@Param("username") String username);
@@ -34,7 +38,7 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Insert("INSERT INTO users(user_id, username, password, email, phone) " +
             "VALUES(#{userId}, #{username}, #{password}, #{email}, #{phone})")
-    @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
+        // @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
     int insertUser(User user);
 
     @Update("UPDATE users SET username = #{username}, email = #{email}, phone = #{phone} WHERE user_id = #{userId}")

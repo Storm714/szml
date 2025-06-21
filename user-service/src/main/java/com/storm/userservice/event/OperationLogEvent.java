@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// 操作日志类
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
