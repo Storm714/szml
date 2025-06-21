@@ -72,6 +72,16 @@ public class JwtUtil {
         }
     }
 
+    public String getRoleFromToken(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            return claims.get("roleCode", String.class);
+        } catch (Exception e) {
+            log.error("从Token中获取角色信息失败", e);
+            return null;
+        }
+    }
+
     // 从Token中获取用户ID
     public Long getUserId(String token) {
         Claims claims = getClaimsFromToken(token);

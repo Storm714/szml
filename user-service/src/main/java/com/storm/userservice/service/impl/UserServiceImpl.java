@@ -178,30 +178,70 @@ public class UserServiceImpl implements UserService {
         log.info("获取用户信息请求: userId={}", userId);
 
         try {
-            // 权限检查已在拦截器中完成
             Long currentUserId = (Long) request.getAttribute("currentUserId");
             String currentUserRole = (String) request.getAttribute("currentUserRole");
 
-            // 检查是否有权限访问指定用户信息
-            if (!"SUPER_ADMIN".equals(currentUserRole) &&
-                    !"ADMIN".equals(currentUserRole) &&
-                    !userId.equals(currentUserId)) {
-                return Result.error(403, "无权限访问该用户信息");
-            }
+            log.info("权限检查 - 当前用户ID: {}, 当前角色: {}, 请求查询用户ID: {}",
+                    currentUserId, currentUserRole, userId);
 
-            User user = userMapper.selectByUserId(userId);
-            if (user == null) {
+            // 先检查目标用户是否存在
+            User targetUser = userMapper.selectByUserId(userId);
+            if (targetUser == null) {
                 return Result.error("用户不存在");
             }
 
-            // 清除敏感信息
-            user.setPassword(null);
+            // 获取目标用户角色
+            String targetUserRole = getTargetUserRole(userId);
+            log.info("目标用户角色: {}", targetUserRole);
 
-            return Result.success(user);
+            // 权限检查
+            boolean hasPermission = false;
+            String reason = "";
+
+            if ("SUPER_ADMIN".equals(currentUserRole)) {
+                hasPermission = true;
+                reason = "超管可以访问所有用户";
+            } else if ("ADMIN".equals(currentUserRole)) {
+                if ("USER".equals(targetUserRole) || userId.equals(currentUserId)) {
+                    hasPermission = true;
+                    reason = "管理员可以访问普通用户和自己";
+                } else {
+                    reason = "管理员不能访问其他管理员或超管";
+                }
+            } else if ("USER".equals(currentUserRole)) {
+                if (userId.equals(currentUserId)) {
+                    hasPermission = true;
+                    reason = "用户访问自己";
+                } else {
+                    reason = "普通用户只能访问自己";
+                }
+            } else {
+                reason = "未知角色";
+            }
+
+            log.info("权限检查结果: {}, 原因: {}", hasPermission, reason);
+
+            if (!hasPermission) {
+                return Result.error(403, "无权限访问该用户信息：" + reason);
+            }
+
+            // 清除敏感信息
+            targetUser.setPassword(null);
+            return Result.success(targetUser);
 
         } catch (Exception e) {
             log.error("获取用户信息失败: userId={}, error={}", userId, e.getMessage(), e);
             return Result.error("获取用户信息失败：" + e.getMessage());
+        }
+    }
+
+    private String getTargetUserRole(Long userId) {
+        try {
+            Result<String> roleResult = permissionServiceFeign.getUserRoleCode(userId);
+            return roleResult.isSuccess() ? roleResult.getData() : null;
+        } catch (Exception e) {
+            log.error("获取用户角色失败: userId={}", userId, e);
+            return null;
         }
     }
 

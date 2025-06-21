@@ -3,13 +3,13 @@ package com.storm.userservice.interceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.storm.common.dto.Result;
 import com.storm.userservice.annotation.RequireRole;
-import com.storm.userservice.feign.PermissionServiceFeign;
 import com.storm.userservice.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.HandlerMethod;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -23,16 +23,18 @@ import java.lang.reflect.Method;
 public class AuthInterceptor implements HandlerInterceptor {
 
     @Autowired
+    @Lazy
     private JwtUtil jwtUtil;
 
     @Autowired
-    private PermissionServiceFeign permissionServiceFeign;
-
-    @Autowired
+    @Lazy
     private ObjectMapper objectMapper;
+
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        log.info("拦截器被触发，请求路径: {}", request.getRequestURI());
+
         // 只拦截Controller方法
         if (!(handler instanceof HandlerMethod)) {
             return true;
@@ -40,6 +42,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         Method method = handlerMethod.getMethod();
+        log.info("处理方法: {}.{}", method.getDeclaringClass().getSimpleName(), method.getName());
 
         // 检查是否需要权限验证
         RequireRole requireRole = method.getAnnotation(RequireRole.class);
@@ -48,8 +51,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         if (requireRole == null) {
+            log.info("方法无需权限验证，直接通过");
             return true; // 不需要权限验证
         }
+
+        log.info("开始权限验证，需要角色: {}", String.join(",", requireRole.value()));
 
         try {
             // 获取JWT Token
@@ -66,16 +72,17 @@ public class AuthInterceptor implements HandlerInterceptor {
             Long userId = jwtUtil.getUserIdFromToken(token);
             String username = jwtUtil.getUsernameFromToken(token);
 
-            // 获取用户角色
-            Result<String> roleResult = permissionServiceFeign.getUserRoleCode(userId);
-            if (!roleResult.isSuccess()) {
-                return handleAuthFailure(response, "获取用户角色失败");
+            // 直接从JWT中获取角色信息，避免远程调用和循环依赖
+            String userRole = jwtUtil.getRoleFromToken(token);
+            if (!StringUtils.hasText(userRole)) {
+                return handleAuthFailure(response, "Token中缺少角色信息");
             }
 
-            String userRole = roleResult.getData();
+            log.info("用户信息 - ID: {}, 用户名: {}, 角色: {}", userId, username, userRole);
 
             // 检查权限
             if (!hasPermission(userRole, requireRole.value(), userId, request)) {
+                log.warn("权限不足 - 用户角色: {}, 需要角色: {}", userRole, String.join(",", requireRole.value()));
                 return handleAuthFailure(response, "权限不足");
             }
 
@@ -84,6 +91,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             request.setAttribute("currentUsername", username);
             request.setAttribute("currentUserRole", userRole);
 
+            log.info("权限验证通过");
             return true;
 
         } catch (Exception e) {
