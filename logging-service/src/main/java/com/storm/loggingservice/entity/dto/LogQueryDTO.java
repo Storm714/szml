@@ -12,8 +12,6 @@ public class LogQueryDTO {
 
     private String action;
 
-    private String ip;
-
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;

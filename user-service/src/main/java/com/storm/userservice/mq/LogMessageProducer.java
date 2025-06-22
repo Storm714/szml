@@ -16,13 +16,13 @@ public class LogMessageProducer {
     private RocketMQTemplate rocketMQTemplate;
 
     // 发送日志消息
-    public void sendLogMessage(Long userId, String action, String detail) {
+    public void sendLogMessage(Long userId, String action, String detail, String ip) {
         try {
             LogEventDTO logEvent = LogEventDTO.builder()
                     .userId(userId)
+                    .ip(ip)
                     .action(action)
                     .detail(detail)
-                    .timestamp(System.currentTimeMillis())
                     .build();
 
             rocketMQTemplate.convertAndSend(MQConstant.LOG_TOPIC, logEvent);
@@ -35,22 +35,22 @@ public class LogMessageProducer {
     }
 
     // 发送用户注册日志
-    public void sendUserRegisterLog(Long userId, String username) {
-        sendLogMessage(userId, "USER_REGISTER", "用户注册: " + username);
+    public void sendUserRegisterLog(Long userId, String username, String ip) {
+        sendLogMessage(userId, "USER_REGISTER", "用户注册: " + username, ip);
     }
 
     // 发送用户登录日志
-    public void sendUserLoginLog(Long userId, String username) {
-        sendLogMessage(userId, "USER_LOGIN", "用户登录: " + username);
+    public void sendUserLoginLog(Long userId, String username, String ip) {
+        sendLogMessage(userId, "USER_LOGIN", "用户登录: " + username, ip);
     }
 
     // 发送用户更新日志
-    public void sendUserUpdateLog(Long userId, String detail) {
-        sendLogMessage(userId, "USER_UPDATE", detail);
+    public void sendUserUpdateLog(Long userId, String detail, String ip) {
+        sendLogMessage(userId, "USER_UPDATE", detail, ip);
     }
 
     // 发送密码重置日志
-    public void sendPasswordResetLog(Long userId) {
-        sendLogMessage(userId, "PASSWORD_RESET", "密码重置");
+    public void sendPasswordResetLog(Long userId, String ip) {
+        sendLogMessage(userId, "PASSWORD_RESET", "密码重置", ip);
     }
 }

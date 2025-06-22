@@ -13,6 +13,7 @@ public interface UserMapper extends BaseMapper<User> {
     @Select("SELECT * FROM users WHERE username = #{username}")
     User selectByUsername(@Param("username") String username);
 
+    // 根据用户ID查询用户
     @Select("SELECT * FROM users WHERE user_id = #{userId}")
     User selectByUserId(@Param("userId") Long userId);
 
@@ -38,13 +39,15 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Insert("INSERT INTO users(user_id, username, password, email, phone) " +
             "VALUES(#{userId}, #{username}, #{password}, #{email}, #{phone})")
-        // @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
-    int insertUser(User user);
+    void insertUser(User user);
 
     @Update("UPDATE users SET username = #{username}, email = #{email}, phone = #{phone} WHERE user_id = #{userId}")
-    int updateUser(User user);
+    void updateUser(User user);
 
     // 更新用户密码
     @Update("UPDATE users SET password = #{password} WHERE user_id = #{userId}")
-    int updatePassword(@Param("userId") Long userId, @Param("password") String password);
+    void updatePassword(@Param("userId") Long userId, @Param("password") String password);
+
+    @Select("SELECT user_id FROM users WHERE username = #{username}")
+    Long selectUserIdByUsername(@Param("username") String username);
 }

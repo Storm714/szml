@@ -1,10 +1,10 @@
-package com.storm.permissionservice.service.impl;
+package com.storm.loggingservice.service.impl;
 
 import com.storm.common.dto.Result;
-import com.storm.permissionservice.dto.OperationLogMessage;
-import com.storm.permissionservice.entity.OperationLog;
-import com.storm.permissionservice.mapper.OperationLogMapper;
-import com.storm.permissionservice.service.OperationLogService;
+import com.storm.loggingservice.dto.OperationLogMessage;
+import com.storm.loggingservice.entity.OperationLog;
+import com.storm.loggingservice.mapper.OperationLogMapper;
+import com.storm.loggingservice.service.OperationLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,36 +23,27 @@ public class OperationLogServiceImpl implements OperationLogService {
     private OperationLogMapper operationLogMapper;
 
     @Override
-    public Result<Void> saveOperationLog(OperationLogMessage logMessage) {
+    public void saveOperationLog(OperationLogMessage logMessage) {
         log.debug("保存操作日志: action={}, userId={}", logMessage.getAction(), logMessage.getUserId());
 
         try {
             OperationLog operationLog = OperationLog.builder()
+                    .logId(null)
                     .userId(logMessage.getUserId())
-                    .username(logMessage.getUsername())
+                    .ip(logMessage.getIp())
+                    .detail(logMessage.getDetail())
                     .action(logMessage.getAction())
-                    .serviceName(logMessage.getServiceName())
-                    .method(logMessage.getMethod())
-                    .requestUrl(logMessage.getRequestUrl())
-                    .ipAddress(logMessage.getIpAddress())
-                    .userAgent(logMessage.getUserAgent())
-                    .requestParams(logMessage.getRequestParams())
-                    .responseResult(logMessage.getResponseResult())
-                    .executionTime(logMessage.getExecutionTime())
-                    .status(logMessage.getStatus())
-                    .errorMsg(logMessage.getErrorMsg())
-                    .createdAt(logMessage.getOperationTime() != null ? logMessage.getOperationTime() : LocalDateTime.now())
                     .build();
 
             operationLogMapper.insert(operationLog);
             log.debug("操作日志保存成功: logId={}", operationLog.getLogId());
 
-            return Result.success();
+            Result.success();
 
         } catch (Exception e) {
             log.error("保存操作日志失败: action={}, userId={}, error={}",
                     logMessage.getAction(), logMessage.getUserId(), e.getMessage(), e);
-            return Result.error("保存操作日志失败：" + e.getMessage());
+            Result.error("保存操作日志失败：" + e.getMessage());
         }
     }
 

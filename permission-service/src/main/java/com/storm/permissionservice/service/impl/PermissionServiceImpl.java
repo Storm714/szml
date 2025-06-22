@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -36,6 +37,7 @@ public class PermissionServiceImpl implements PermissionService {
             UserRole userRole = UserRole.builder()
                     .userId(userId)
                     .roleId(RoleEnum.USER.getRoleId())
+                    .roleCode(RoleEnum.USER.getRoleCode())
                     .build();
 
             userRoleMapper.insert(userRole);
@@ -50,59 +52,26 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Result<String> getUserRoleCode(Long userId) {
-        log.info("查询用户角色码请求: userId={}", userId);
-
-        try {
-            List<String> roleCodes = userRoleMapper.getUserRoleCodes(userId);
-
-            if (roleCodes.isEmpty()) {
-                log.warn("用户未绑定任何角色: userId={}", userId);
-                return Result.error("用户未绑定任何角色");
-            }
-
-            // 返回最高权限的角色
-            String highestRoleCode = getHighestRoleCode(roleCodes);
-            log.info("查询用户角色码成功: userId={}, roleCode={}", userId, highestRoleCode);
-
-            return Result.success(highestRoleCode);
-
-        } catch (Exception e) {
-            log.error("查询用户角色码失败: userId={}, error={}", userId, e.getMessage(), e);
-            return Result.error("查询用户角色码失败：" + e.getMessage());
-        }
-    }
-
-    @Override
     public Result<Void> upgradeToAdmin(Long userId) {
         log.info("升级用户为管理员请求: userId={}", userId);
 
         try {
             // 检查用户当前角色
-            List<String> currentRoleCodes = userRoleMapper.getUserRoleCodes(userId);
-            if (currentRoleCodes.isEmpty()) {
+            String currentRoleCode = userRoleMapper.getUserRoleCode(userId);
+            if (currentRoleCode.isEmpty()) {
                 return Result.error("用户未绑定任何角色，请先绑定默认角色");
             }
 
             // 检查用户是否已经是管理员或超管
-            if (currentRoleCodes.contains(RoleEnum.SUPER_ADMIN.getRoleCode())) {
+            if (currentRoleCode.contains(RoleEnum.SUPER_ADMIN.getRoleCode())) {
                 return Result.error("用户已经是超级管理员，无需升级");
             }
 
-            if (currentRoleCodes.contains(RoleEnum.ADMIN.getRoleCode())) {
+            if (currentRoleCode.contains(RoleEnum.ADMIN.getRoleCode())) {
                 return Result.error("用户已经是管理员");
             }
 
-            // 添加管理员角色（保留原有角色）
-            if (!userRoleMapper.existsByUserIdAndRoleId(userId, RoleEnum.ADMIN.getRoleId())) {
-                UserRole adminRole = UserRole.builder()
-                        .userId(userId)
-                        .roleId(RoleEnum.ADMIN.getRoleId())
-                        .build();
-
-                userRoleMapper.insert(adminRole);
-            }
+            userRoleMapper.updateUserRole(userId, RoleEnum.ADMIN.getRoleId(), RoleEnum.ADMIN.getRoleCode());
 
             log.info("升级用户为管理员成功: userId={}", userId);
             return Result.success();
@@ -119,26 +88,17 @@ public class PermissionServiceImpl implements PermissionService {
 
         try {
             // 检查用户当前角色
-            List<String> currentRoleCodes = userRoleMapper.getUserRoleCodes(userId);
-            if (currentRoleCodes.isEmpty()) {
+            String currentRoleCode = userRoleMapper.getUserRoleCode(userId);
+            if (currentRoleCode.isEmpty()) {
                 return Result.error("用户未绑定任何角色");
             }
 
             // 检查是否只有普通用户角色
-            if (currentRoleCodes.size() == 1 && currentRoleCodes.contains(RoleEnum.USER.getRoleCode())) {
+            if (currentRoleCode.equals("USER")) {
                 return Result.error("用户已经是普通用户");
             }
 
-            // 删除所有角色绑定
-            userRoleMapper.deleteByUserId(userId);
-
-            // 重新绑定普通用户角色
-            UserRole userRole = UserRole.builder()
-                    .userId(userId)
-                    .roleId(RoleEnum.USER.getRoleId())
-                    .build();
-
-            userRoleMapper.insert(userRole);
+            userRoleMapper.updateUserRole(userId, RoleEnum.USER.getRoleId(), RoleEnum.USER.getRoleCode());
 
             log.info("降级用户为普通用户成功: userId={}", userId);
             return Result.success();
@@ -155,29 +115,31 @@ public class PermissionServiceImpl implements PermissionService {
 
         try {
             // 检查用户当前角色
-            List<String> currentRoleCodes = userRoleMapper.getUserRoleCodes(userId);
-            if (currentRoleCodes.isEmpty()) {
-                return Result.error("用户未绑定任何角色，请先绑定默认角色");
-            }
+            UserRole existingRole = userRoleMapper.selectRoleIdByUserId(userId);
 
             // 检查用户是否已经是超管
-            if (currentRoleCodes.contains(RoleEnum.SUPER_ADMIN.getRoleCode())) {
-                return Result.error("用户已经是超级管理员");
+            if (existingRole != null) {
+                if (existingRole.getRoleId().equals(1)) {
+                    return Result.error("用户已经是超级管理员");
             }
 
             // 添加超级管理员角色（保留原有角色）
-            if (!userRoleMapper.existsByUserIdAndRoleId(userId, RoleEnum.SUPER_ADMIN.getRoleId())) {
+            existingRole.setRoleId(1);
+            existingRole.setRoleCode(RoleEnum.SUPER_ADMIN.getRoleCode());
+            userRoleMapper.updateById(existingRole);
+            log.info("用户 {} 角色已更新为超级管理员", userId);
+            } else {
+                // 如果用户没有任何角色，直接绑定超级管理员角色
                 UserRole superAdminRole = UserRole.builder()
                         .userId(userId)
                         .roleId(RoleEnum.SUPER_ADMIN.getRoleId())
+                        .roleCode(RoleEnum.SUPER_ADMIN.getRoleCode())
                         .build();
 
                 userRoleMapper.insert(superAdminRole);
             }
-
             log.info("升级用户为超级管理员成功: userId={}", userId);
             return Result.success();
-
         } catch (Exception e) {
             log.error("升级用户为超级管理员失败: userId={}, error={}", userId, e.getMessage(), e);
             return Result.error("升级失败：" + e.getMessage());
@@ -206,18 +168,36 @@ public class PermissionServiceImpl implements PermissionService {
         }
     }
 
-    /**
-     * 获取最高权限的角色代码
-     */
-    private String getHighestRoleCode(List<String> roleCodes) {
-        // 优先级：SUPER_ADMIN > ADMIN > USER
-        if (roleCodes.contains(RoleEnum.SUPER_ADMIN.getRoleCode())) {
-            return RoleEnum.SUPER_ADMIN.getRoleCode();
+    @Override
+    public Result<String> getUserRoleCode(Long userId) {
+        log.info("查询用户角色码请求: userId={}", userId);
+
+        try {
+            if (userRoleMapper.existsUserByUserId(userId) == 0) {
+                log.warn("用户未绑定任何角色: userId={}", userId);
+                return Result.error("用户未绑定任何角色");
+            }
+            String result = userRoleMapper.getUserRoleCode(userId);
+            log.info("查询用户角色码成功: userId={}, roleCode={}", userId, result);
+            return Result.success(result);
+
+        } catch (Exception e) {
+            log.error("查询用户角色码失败: userId={}, error={}", userId, e.getMessage(), e);
+            return Result.error("查询用户角色码失败：" + e.getMessage());
         }
-        if (roleCodes.contains(RoleEnum.ADMIN.getRoleCode())) {
-            return RoleEnum.ADMIN.getRoleCode();
+    }
+
+    @Override
+    public List<Long> selectUsersByRoleWithPage(String roleCode, Integer offset, Integer size) {
+        log.info("查询角色用户列表请求: roleCode={}, offset={}, size={}", roleCode, offset, size);
+        if (Objects.equals(roleCode, "SUPER_ADMIN")) {
+            return userRoleMapper.selectAdminsAndUsers("SUPER_ADMIN");
+        } else if (Objects.equals(roleCode, "ADMIN")) {
+            return userRoleMapper.selectUsers();
+        } else {
+            log.warn("未知角色代码: {}", roleCode);
+            return List.of();
         }
-        return RoleEnum.USER.getRoleCode();
     }
 }
 

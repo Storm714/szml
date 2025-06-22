@@ -24,4 +24,7 @@ public class UserRole {
 
     @TableField("role_id")
     private Integer roleId;
+
+    @TableField("role_code")
+    private String roleCode;
 }

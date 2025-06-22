@@ -12,11 +12,11 @@ public class LogResponseDTO {
 
     private String username;
 
+    private String ip;
+
     private String action;
 
     private String actionDesc;
-
-    private String ip;
 
     private String detail;
 }

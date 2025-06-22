@@ -1,8 +1,8 @@
-package com.storm.permissionservice.controller;
+package com.storm.loggingservice.controller;
 
 import com.storm.common.dto.Result;
-import com.storm.permissionservice.entity.OperationLog;
-import com.storm.permissionservice.service.OperationLogService;
+import com.storm.loggingservice.entity.OperationLog;
+import com.storm.loggingservice.service.OperationLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class OperationLogController {
     }
 
     // 根据操作类型查询日志
-    @GetMapping("/action/{action}")
+        @GetMapping("/action/{action}")
     public Result<List<OperationLog>> getLogsByAction(
             @PathVariable String action,
             @RequestParam(defaultValue = "100") int limit) {

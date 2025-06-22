@@ -1,4 +1,4 @@
-package com.storm.common.dto;
+package com.storm.loggingservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,20 +7,21 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-// 日志事件DTO
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LogEventDTO {
+public class OperationLogMessage {
 
     private Long userId;
 
-    private String action;
+    private String username;
 
     private String ip;
 
+    private LocalDateTime gmt_create;
+
     private String detail;
 
-    private LocalDateTime timestamp;
+    private String action;
 }

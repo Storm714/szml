@@ -1,6 +1,10 @@
 package enums;
 
+import lombok.Data;
+import lombok.Getter;
+
 // 角色枚举
+@Getter
 public enum RoleEnum {
 
     // 超级管理员
@@ -12,8 +16,6 @@ public enum RoleEnum {
     // 管理员
     ADMIN(3, "ADMIN", "管理员");
 
-
-
     private final Integer roleId;
     private final String roleCode;
     private final String roleName;
@@ -24,19 +26,6 @@ public enum RoleEnum {
         this.roleName = roleName;
     }
 
-    public Integer getRoleId() {
-        return roleId;
-    }
-
-    public String getRoleCode() {
-        return roleCode;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    // 根据角色ID获取角色枚举
     public static RoleEnum getByRoleId(Integer roleId) {
         for (RoleEnum role : values()) {
             if (role.getRoleId().equals(roleId)) {
@@ -46,7 +35,6 @@ public enum RoleEnum {
         return null;
     }
 
-    // 根据角色代码获取角色枚举
     public static RoleEnum getByRoleCode(String roleCode) {
         for (RoleEnum role : values()) {
             if (role.getRoleCode().equals(roleCode)) {

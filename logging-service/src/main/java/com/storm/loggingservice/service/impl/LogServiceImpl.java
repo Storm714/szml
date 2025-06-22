@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 // 日志服务实现类
@@ -22,11 +23,13 @@ public class LogServiceImpl implements LogService {
     @Override
     public void saveLog(LogEventDTO logEvent) {
         try {
-            OperationLog operationLog = new OperationLog();
-            operationLog.setUserId(logEvent.getUserId());
-            operationLog.setAction(logEvent.getAction());
-            operationLog.setIp(logEvent.getIp());
-            operationLog.setDetail(logEvent.getDetail());
+            OperationLog operationLog = OperationLog.builder()
+                    .userId(logEvent.getUserId())
+                    .action(logEvent.getAction())
+                    .ip(logEvent.getIp())
+                    .detail(logEvent.getDetail())
+                    .gmtCreate(LocalDateTime.now())
+                    .build();
 
             operationLogMapper.insert(operationLog);
             log.info("保存操作日志成功: userId={}, action={}", logEvent.getUserId(), logEvent.getAction());

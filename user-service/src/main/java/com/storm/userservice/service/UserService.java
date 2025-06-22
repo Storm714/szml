@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface UserService {
 
     // 用户注册
-    Result<Void> register(UserRegisterDTO dto);
+    Result<Void> register(UserRegisterDTO dto, HttpServletRequest request);
 
     // 用户登录
-    Result<String> login(UserLoginDTO dto);
+    Result<String> login(UserLoginDTO dto, HttpServletRequest request);
 
     // 获取用户列表
     Result<?> getUsers(int page, int size, HttpServletRequest request);

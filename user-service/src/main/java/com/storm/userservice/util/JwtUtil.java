@@ -38,15 +38,6 @@ public class JwtUtil {
         return createToken(claims, username);
     }
 
-    // 生成JWT Token
-    public String generateToken(Long userId, String username) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId);
-        claims.put("username", username);
-
-        return createToken(claims, username);
-    }
-
     // 创建Token
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()

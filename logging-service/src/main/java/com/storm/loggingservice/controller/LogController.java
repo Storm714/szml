@@ -1,5 +1,6 @@
 package com.storm.loggingservice.controller;
 
+import com.storm.common.dto.LogEventDTO;
 import com.storm.common.dto.Result;
 import com.storm.loggingservice.service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,13 @@ public class LogController {
     @Autowired
     private LogService logService;
 
-    //查询用户操作日志
+    // 保存操作日志
+    @PostMapping("/save")
+    public void saveLog(@RequestBody LogEventDTO logEvent) {
+        logService.saveLog(logEvent);
+    }
+
+    // 查询用户操作日志
     @GetMapping("/user/{userId}")
     public Result<?> getUserLogs(@PathVariable Long userId,
                                  @RequestParam(defaultValue = "1") int page,

@@ -17,4 +17,7 @@ public interface RoleMapper extends BaseMapper<Role> {
     // 检查角色代码是否存在
     @Select("SELECT COUNT(1) FROM roles WHERE role_code = #{roleCode}")
     boolean existsByRoleCode(@Param("roleCode") String roleCode);
+
+    @Select("SELECT role_code FROM user_roles WHERE user_id = #{userId}")
+    String getUserRoleCode(@Param("userId") Long userId);
 }

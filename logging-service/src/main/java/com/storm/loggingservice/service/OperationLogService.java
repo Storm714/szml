@@ -1,8 +1,8 @@
-package com.storm.permissionservice.service;
+package com.storm.loggingservice.service;
 
 import com.storm.common.dto.Result;
-import com.storm.permissionservice.dto.OperationLogMessage;
-import com.storm.permissionservice.entity.OperationLog;
+import com.storm.loggingservice.dto.OperationLogMessage;
+import com.storm.loggingservice.entity.OperationLog;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 public interface OperationLogService {
 
     // 保存操作日志
-    Result<Void> saveOperationLog(OperationLogMessage logMessage);
+    void saveOperationLog(OperationLogMessage logMessage);
 
     // 根据用户ID查询操作日志
     Result<List<OperationLog>> getLogsByUserId(Long userId, int limit);

@@ -1,8 +1,8 @@
-package com.storm.permissionservice.mq;
+package com.storm.loggingservice.mq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.storm.permissionservice.dto.OperationLogMessage;
-import com.storm.permissionservice.service.OperationLogService;
+import com.storm.loggingservice.dto.OperationLogMessage;
+import com.storm.loggingservice.service.OperationLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
@@ -40,7 +40,6 @@ public class OperationLogConsumer implements RocketMQListener<String> {
 
         } catch (Exception e) {
             log.error("操作日志消息处理失败: message={}, error={}", message, e.getMessage(), e);
-            // 这里可以选择将消息发送到死信队列或进行其他处理
             throw new RuntimeException("操作日志消息处理失败", e);
         }
     }

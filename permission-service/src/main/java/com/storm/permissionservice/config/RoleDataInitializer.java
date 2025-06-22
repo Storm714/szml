@@ -17,7 +17,7 @@ public class RoleDataInitializer implements CommandLineRunner {
     private RoleMapper roleMapper;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         log.info("开始初始化角色数据...");
 
         // 初始化所有角色

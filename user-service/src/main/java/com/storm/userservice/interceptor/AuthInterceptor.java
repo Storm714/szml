@@ -52,7 +52,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         if (requireRole == null) {
             log.info("方法无需权限验证，直接通过");
-            return true; // 不需要权限验证
+            return true;
         }
 
         log.info("开始权限验证，需要角色: {}", String.join(",", requireRole.value()));

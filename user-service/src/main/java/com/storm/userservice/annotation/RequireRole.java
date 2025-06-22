@@ -10,5 +10,4 @@ public @interface RequireRole {
 
     String[] value() default {};
 
-    boolean allowSelf() default false;
 }

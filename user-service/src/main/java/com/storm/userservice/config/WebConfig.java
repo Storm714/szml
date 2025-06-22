@@ -16,12 +16,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/user/**")  // 拦截所有用户相关接口
+                .addPathPatterns("/user/**")
                 .excludePathPatterns(
-                        "/user/register",     // 排除注册接口
-                        "/user/login",        // 排除登录接口
-                        "/actuator/**",       // 排除健康检查接口
-                        "/error"              // 排除错误页面
+                        "/user/register",
+                        "/user/login",
+                        "/actuator/**",
+                        "/error"
                 );
     }
 }

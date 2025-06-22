@@ -5,6 +5,8 @@ import com.storm.permissionservice.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/permission")
 public class PermissionController {
@@ -46,5 +48,15 @@ public class PermissionController {
     @GetMapping("/user-all-roles")
     public Result<java.util.List<String>> getUserAllRoles(@RequestParam Long userId) {
         return permissionService.getUserAllRoles(userId);
+    }
+
+    // 分页查询指定角色的用户
+    @GetMapping("/users-by-role")
+    public List<Long> selectUsersByRoleWithPage(
+            @RequestParam("roleCode") String roleCode,
+            @RequestParam("pageNum") Integer pageNum,
+            @RequestParam("pageSize") Integer pageSize
+    ) {
+        return permissionService.selectUsersByRoleWithPage(roleCode, pageNum, pageSize);
     }
 }

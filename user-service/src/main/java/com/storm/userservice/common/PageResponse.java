@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+// 通用分页响应类
 @Data
 @NoArgsConstructor
 public class PageResponse<T> {
@@ -15,11 +16,4 @@ public class PageResponse<T> {
     private long total;
     private int totalPages;
 
-    public PageResponse(List<T> content, int pageNumber, int pageSize, long total) {
-        this.content = content;
-        this.pageNumber = pageNumber;
-        this.pageSize = pageSize;
-        this.total = total;
-        this.totalPages = (int) Math.ceil((double) total / pageSize);
-    }
 }

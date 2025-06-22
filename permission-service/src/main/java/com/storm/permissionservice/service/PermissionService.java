@@ -2,6 +2,8 @@ package com.storm.permissionservice.service;
 
 import com.storm.common.dto.Result;
 
+import java.util.List;
+
 // 权限服务接口
 public interface PermissionService {
 
@@ -15,6 +17,8 @@ public interface PermissionService {
 
     Result<Void> downgradeToUser(Long userId);
 
-    Result<java.util.List<String>> getUserAllRoles(Long userId);
+    Result<List<String>> getUserAllRoles(Long userId);
+
+    List<Long> selectUsersByRoleWithPage(String roleCode, Integer offset, Integer size);
 }
 
