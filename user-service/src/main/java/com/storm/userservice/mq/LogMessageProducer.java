@@ -1,6 +1,5 @@
 package com.storm.userservice.mq;
 
-import com.storm.common.constant.MQConstant;
 import com.storm.common.dto.LogEventDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
@@ -24,8 +23,9 @@ public class LogMessageProducer {
                     .action(action)
                     .detail(detail)
                     .build();
+            String LOG_TOPIC = "operation-log-topic";
 
-            rocketMQTemplate.convertAndSend(MQConstant.LOG_TOPIC, logEvent);
+            rocketMQTemplate.convertAndSend(LOG_TOPIC, logEvent);
 
             log.info("日志消息发送成功: userId={}, action={}", userId, action);
 

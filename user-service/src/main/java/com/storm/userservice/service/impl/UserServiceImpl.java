@@ -26,7 +26,6 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@Transactional
 public class UserServiceImpl implements UserService {
 
     @Autowired
@@ -95,6 +94,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<String> login(UserLoginDTO dto, HttpServletRequest request) {
         log.info("用户登录请求: username={}", dto.getUsername());
 
@@ -249,6 +249,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<Void> updateUser(Long userId, UserRegisterDTO dto, HttpServletRequest request) {
         log.info("修改用户信息请求: userId={}, username={}", userId, dto.getUsername());
 
@@ -341,6 +342,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<Void> resetPassword(Long userId, String newPassword, HttpServletRequest request) {
         log.info("重置密码请求: userId={}", userId);
 
@@ -350,7 +352,6 @@ public class UserServiceImpl implements UserService {
             String currentUserRole = (String) request.getAttribute("currentUserRole");
 
             // 检查是否有权限重置指定用户密码
-            User targetUser = userMapper.selectByUserId(userId);
             PermissionCheckResult result = checkUserPermission(
                     currentUserRole,
                     currentUserId,
@@ -393,7 +394,7 @@ public class UserServiceImpl implements UserService {
             String actionDesc
     ) {
         boolean hasPermission = false;
-        String reason = "";
+        String reason;
 
         if ("SUPER_ADMIN".equals(currentUserRole)) {
             hasPermission = true;

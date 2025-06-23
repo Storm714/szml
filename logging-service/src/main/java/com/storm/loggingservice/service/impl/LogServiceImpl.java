@@ -8,6 +8,7 @@ import com.storm.loggingservice.service.LogService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class LogServiceImpl implements LogService {
     private OperationLogMapper operationLogMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveLog(LogEventDTO logEvent) {
         try {
             OperationLog operationLog = OperationLog.builder()
@@ -39,6 +41,7 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<List<?>> getUserLogs(Long userId, int page, int size) {
         try {
             int offset = (page - 1) * size;
@@ -51,6 +54,7 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Result<List<?>> getAllLogs(int page, int size) {
         try {
             int offset = (page - 1) * size;

@@ -73,13 +73,6 @@
 			<version>2.3.0</version>
 		</dependency>
 
-		<!-- Common Module -->
-		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>common</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
 		<!-- Test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -91,12 +84,6 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.storm</groupId>
-			<artifactId>user-service</artifactId>
-			<version>1.0.0</version>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

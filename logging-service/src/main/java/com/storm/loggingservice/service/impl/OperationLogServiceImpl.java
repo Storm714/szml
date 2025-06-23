@@ -16,13 +16,13 @@ import java.util.List;
 // 操作日志服务实现类
 @Slf4j
 @Service
-@Transactional
 public class OperationLogServiceImpl implements OperationLogService {
 
     @Autowired
     private OperationLogMapper operationLogMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveOperationLog(OperationLogMessage logMessage) {
         log.debug("保存操作日志: action={}, userId={}", logMessage.getAction(), logMessage.getUserId());
 
@@ -94,6 +94,7 @@ public class OperationLogServiceImpl implements OperationLogService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<Integer> cleanExpiredLogs(int retentionDays) {
         log.info("清理过期日志: retentionDays={}", retentionDays);
 
